@@ -1,46 +1,40 @@
 class TasksController < ApplicationController
-    def index
-        @tasks = Task.all
-        render 'tasks/index'
+  def index
+    @tasks = Task.all
+    render 'tasks/index'
+  end
+
+  def create
+    @task = Task.new(task_params)
+
+    render 'tasks/create' if @task.save
+  end
+
+  def destroy
+    @task = Task.find_by(id: params[:id])
+
+    if @task&.destroy
+      render json: { success: true }
+    else
+      render json: { success: false }
     end
+  end
 
-    def create
-      @task = Task.new(task_params)
+  def mark_complete
+    @task = Task.find_by(id: params[:id])
 
-      if @task.save
-        render 'tasks/create'
-      end
-    end
+    render 'tasks/update' if @task&.update(completed: true)
+  end
 
-    def destroy
-      @task = Task.find_by(id: params[:id])
+  def mark_active
+    @task = Task.find_by(id: params[:id])
 
-      if @task and @task.destroy
-        render json: {success: true}
-      else
-        render json: {success: false}
-      end
-    end
+    render 'tasks/update' if @task&.update(completed: false)
+  end
 
-    def mark_complete
-      @task = Task.find_by(id: params[:id])
+  private
 
-      if @task and @task.update(completed: true)
-        render 'tasks/update'
-      end
-    end
-
-    def mark_active
-      @task = Task.find_by(id: params[:id])
-
-      if @task and @task.update(completed: false)
-        render 'tasks/update'
-      end
-    end
-
-    private
-
-    def task_params
-        params.require(:task).permit(:content)
-    end
+  def task_params
+    params.require(:task).permit(:content)
+  end
 end
